@@ -45,4 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startModule: {fileID: 11400000, guid: 8d84e81cd8bbea24b9e4ef127df86484, type: 2}
-  modules: []
+  modules:
+  - {fileID: 11400000, guid: 0eaf632134321814892e0bfddbd2a49d, type: 2}
