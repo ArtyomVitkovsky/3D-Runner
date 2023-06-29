@@ -6,6 +6,6 @@ namespace Modules.MainModule.Scripts.Enums
     public enum Module
     {
         MainModule,
-        FlappyBirdModule
+        RunnerGameModule
     }
 }
