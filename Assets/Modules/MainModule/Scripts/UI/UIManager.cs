@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Modules.MainModule.Scripts.UI.Interfaces;
 using Modules.MainModule.Scripts.UI.Screens;
 using UnityEngine;
@@ -37,6 +38,11 @@ namespace Modules.MainModule.Scripts.UI
         public void RemoveScreen(IScreen screen)
         {
             screens.Remove(screen);
+        }
+        
+        public T GetScreen<T>()
+        {
+            return (T) screens.FirstOrDefault(s => s is T);
         }
 
         public void SetScreenActive<T>(bool isActive, bool asOverlay)

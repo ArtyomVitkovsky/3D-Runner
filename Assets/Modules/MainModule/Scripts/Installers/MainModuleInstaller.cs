@@ -77,9 +77,7 @@ namespace Modules.MainModule.Scripts.Installers
 
             inputServiceInstance = Container
             .InstantiatePrefabForComponent<MobileInputService>(mobileInputService);
-
-#endif
-            
+#endif 
 #if UNITY_EDITOR
             
             inputServiceInstance = Container

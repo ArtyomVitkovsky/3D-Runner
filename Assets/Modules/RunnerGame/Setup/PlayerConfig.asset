@@ -13,4 +13,6 @@ MonoBehaviour:
   m_Name: PlayerConfig
   m_EditorClassIdentifier: 
   speed: 5
+  resetSpeedDuration: 3
   jumpForce: 5
+  startHealthPoints: 5

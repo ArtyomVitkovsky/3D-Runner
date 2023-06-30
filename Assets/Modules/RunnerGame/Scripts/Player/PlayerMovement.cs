@@ -24,6 +24,12 @@ namespace Modules.RunnerGame.Scripts.Player
 
         public UnityAction OnGrounded;
         public UnityAction OnJump;
+        
+        public float Speed
+        {
+            get => speed;
+            set => speed = value;
+        }
 
         public PlayerMovement(InputService inputService, Rigidbody rigidbody, Transform transform, float speed, float jumpForce)
         {

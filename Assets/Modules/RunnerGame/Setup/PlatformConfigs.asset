@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe5444bb02324cf4bab307264e2dfdc7, type: 3}
+  m_Name: PlatformConfigs
+  m_EditorClassIdentifier: 
+  platformConfigs:
+  - prefab: {fileID: 5917971072966907473, guid: 8dddeabd6f8ceb14dae457ec81ecbd7b, type: 3}
+    type: 0
+    spawnChance: 65
+  - prefab: {fileID: 470989408366561714, guid: 6acf7657aaaca0242b4e4ff1b756227e, type: 3}
+    type: 1
+    spawnChance: 5
+  - prefab: {fileID: 470989408366561714, guid: 6acf7657aaaca0242b4e4ff1b756227e, type: 3}
+    type: 2
+    spawnChance: 5
+  - prefab: {fileID: 3316609217189877629, guid: 673dc080cf8f6c54ab447209264989ac, type: 3}
+    type: 3
+    spawnChance: 10
+  - prefab: {fileID: 5767646525986540076, guid: 0ac97b4571f3a1b4cb5f5eed2111a1b7, type: 3}
+    type: 4
+    spawnChance: 15
+  - prefab: {fileID: 3442225276560799374, guid: 17de6fcc325e88a4e90d475872b5cd4c, type: 3}
+    type: 5
+    spawnChance: 0
+  - prefab: {fileID: 874384944544144086, guid: 27df8775b62835841bf14495c9a8a4d3, type: 3}
+    type: 6
+    spawnChance: 0

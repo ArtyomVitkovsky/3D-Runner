@@ -1,3 +1,4 @@
+using Modules.RunnerGame.Scripts.UI;
 using UnityEngine;
 using Zenject;
 
@@ -7,11 +8,13 @@ namespace Modules.RunnerGame.Scripts.Installers
     {
         [SerializeField] private Player.Player playerPrefab;
         [SerializeField] private PlayerCamera.PlayerCamera playerCameraPrefab;
+        [SerializeField] private RunnerUIManager runnerUIManager;
 
         public override void InstallBindings()
         {
             BindPlayer();
             BindPlayerCamera();
+            BindRunnerUI();
         }
 
         private void BindPlayer()
@@ -28,6 +31,11 @@ namespace Modules.RunnerGame.Scripts.Installers
                 .InstantiatePrefabForComponent<PlayerCamera.PlayerCamera>(playerCameraPrefab);
 
             Container.Bind<PlayerCamera.PlayerCamera>().FromInstance(playerCameraInstance).AsSingle();
+        }
+        
+        private void BindRunnerUI()
+        {
+            Container.Bind<RunnerUIManager>().FromInstance(runnerUIManager).AsSingle();
         }
     }
 }
