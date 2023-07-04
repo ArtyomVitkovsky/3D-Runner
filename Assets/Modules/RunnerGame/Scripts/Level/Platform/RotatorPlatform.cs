@@ -9,7 +9,7 @@ namespace Modules.RunnerGame.Scripts.Level.Platform
         private bool isLeftRotator;
         private Player.Player player;
 
-        public RotatorPlatform(GameObject platform, bool isLeftRotator, Player.Player player) : base(platform)
+        public RotatorPlatform(GameObject platform, int index, bool isLeftRotator, Player.Player player) : base(platform, index)
         {
             this.isLeftRotator = isLeftRotator;
             this.player = player;

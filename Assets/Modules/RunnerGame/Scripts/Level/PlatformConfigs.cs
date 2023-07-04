@@ -1,9 +1,10 @@
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Modules.RunnerGame.Scripts.Level
 {
-    [CreateAssetMenu(menuName = "Scriptable Objects/Platforms", fileName = "PlatformConfigs", order = 0)]
+    [CreateAssetMenu(menuName = "Scriptable Objects/Platforms", fileName = "PlatformConfigs")]
     public class PlatformConfigs : ScriptableObject
     {
         [SerializeField] private PlatformConfig[] platformConfigs;

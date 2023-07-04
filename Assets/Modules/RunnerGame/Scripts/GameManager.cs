@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Modules.MainModule.Scripts.UI;
 using Modules.MainModule.Scripts.UI.Screens;
@@ -11,6 +12,7 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] private PlatformConfigs platformConfigs;
     private PlatformGenerator platformGenerator;
+    private PlatformsSystem platformsSystem;
 
     private Dictionary<PlatformType, int> passedPlatforms;
 
@@ -32,17 +34,36 @@ public class GameManager : MonoBehaviour
 
         passedPlatforms = new Dictionary<PlatformType, int>();
         platformGenerator = new PlatformGenerator(platformConfigs, 50, player, transform);
-        platformGenerator.OnPlatformPassed += OnPlatformPassed;
+
+        platformsSystem =
+            new PlatformsSystem(
+                platformGenerator.Platforms, 
+                this.player, 
+                platformGenerator.PlatformsCount);
+        
+        platformsSystem.OnPlatformPassed += OnPlatformPassed;
     }
 
     private void OnPlatformPassed(PlatformType type)
     {
+        if (type == PlatformType.Finish)
+        {
+            OnFinish();
+        }
+        
         if (!passedPlatforms.ContainsKey(type))
         {
             passedPlatforms.Add(type, 0);
         }
 
         passedPlatforms[type]++;
+    }
+
+    private void OnFinish()
+    {
+        GameSettings.IS_PAUSED = true;
+        
+        runnerUIManager.ShowWinScreen(passedPlatforms);
     }
 
     private void SetupUI()
@@ -67,7 +88,7 @@ public class GameManager : MonoBehaviour
     
     private void Update()
     {
-        platformGenerator.Update();
+        platformsSystem.Run();
     }
 
     private void OnPlatformGenerated(float progress)
@@ -79,5 +100,11 @@ public class GameManager : MonoBehaviour
     {
         uiManager.SetScreenActive<LoadingScreen>(false, false);
         runnerUIManager.ShowTapToStartScreen();
+    }
+
+    private void OnDestroy()
+    {
+        player.OnSpeedChange -= runnerUIManager.PlayerStatsScreen.UpdateSpeedText;
+        player.OnHealthChange -= runnerUIManager.PlayerStatsScreen.UpdateHealthText;
     }
 }

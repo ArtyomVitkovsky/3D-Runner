@@ -18,7 +18,8 @@ namespace Modules.RunnerGame.Scripts.Level
 
         private Dictionary<PlatformType, List<Platform.Platform>> platforms;
 
-        private Vector3 platformPosition;
+        private Vector3 platformPosition = new(0, 0, -4f);
+        private float platformPositionStep;
         private Vector3 rotation;
 
         public UnityAction<float> OnPlatformGenerated;
@@ -26,9 +27,12 @@ namespace Modules.RunnerGame.Scripts.Level
 
         private Transform holder;
 
-        public UnityAction<PlatformType> OnPlatformPassed;
+        private int platformIndex;
 
-        public PlatformGenerator(PlatformConfigs platformConfigs, int platformsCount, Player.Player player,
+        public PlatformGenerator(
+            PlatformConfigs platformConfigs,
+            int platformsCount,
+            Player.Player player,
             Transform holder)
         {
             this.platformConfigs = platformConfigs;
@@ -41,30 +45,52 @@ namespace Modules.RunnerGame.Scripts.Level
             this.holder = holder;
         }
 
+        public Dictionary<PlatformType, List<Platform.Platform>> Platforms => platforms;
+
+        public int PlatformsCount => platformIndex + 1;
+
         public void Generate()
         {
             platforms = new Dictionary<PlatformType, List<Platform.Platform>>();
-            platformPosition = Vector3.zero;
 
+            platformIndex = 0;
             for (int i = 0; i < 10; i++)
             {
                 var platform = platformConfigs.GetPlatform(PlatformType.Default);
-                GeneratePlatform(platform, i);
+                GeneratePlatform(platform, platformIndex);
+                platformIndex++;
             }
 
             for (int i = 0; i < platformsCount; i++)
             {
                 var platform = platformConfigs.GetRandomPlatform();
-                GeneratePlatform(platform, i);
+                GeneratePlatform(platform, platformIndex);
+                platformIndex++;
             }
-            
-            for (int i = 0; i < 10; i++)
+
+            for (int i = 0; i < 5; i++)
             {
                 var platform = platformConfigs.GetPlatform(PlatformType.Default);
-                GeneratePlatform(platform, i);
+                GeneratePlatform(platform, platformIndex);
+                platformIndex++;
             }
-            
+
+            GenerateFinishPlatform(platformIndex);
+
+            for (int i = 0; i < 5; i++)
+            {
+                var platform = platformConfigs.GetPlatform(PlatformType.Default);
+                GeneratePlatform(platform, platformIndex);
+                platformIndex++;
+            }
+
             OnGenerationFinished?.Invoke();
+        }
+
+        private void GenerateFinishPlatform(int platformIndex)
+        {
+            var platform = platformConfigs.GetPlatform(PlatformType.Finish);
+            GeneratePlatform(platform, platformIndex);
         }
 
         private void GeneratePlatform(PlatformConfig platform, int index)
@@ -78,78 +104,71 @@ namespace Modules.RunnerGame.Scripts.Level
 
             var platformInstance = GameObject.Instantiate(
                 platform.Prefab,
-                platformPosition,
-                Quaternion.Euler(rotation),
                 holder);
+
+            platformPositionStep = 2;
 
             switch (platform.Type)
             {
                 case PlatformType.Default:
                 {
-                    platforms[platform.Type].Add(new Platform.Platform(platformInstance));
+                    platforms[platform.Type].Add(new Platform.Platform(platformInstance, index));
                     break;
                 }
                 case PlatformType.Missed:
                 {
-                    platforms[platform.Type].Add(new MissedPlatform(platformInstance));
+                    platforms[platform.Type].Add(new MissedPlatform(platformInstance, index));
                     break;
                 }
                 case PlatformType.DoubleMissed:
                 {
-                    platforms[platform.Type].Add(new DoubleMissedPlatform(platformInstance));
+                    platforms[platform.Type].Add(new DoubleMissedPlatform(platformInstance, index));
+                    platformPositionStep = 3;
                     break;
                 }
                 case PlatformType.Saw:
                 {
-                    platforms[platform.Type].Add(new SawPlatform(platformInstance));
+                    platforms[platform.Type].Add(new SawPlatform(platformInstance, index));
                     break;
                 }
                 case PlatformType.Wall:
                 {
-                    platforms[platform.Type].Add(new WallPlatform(platformInstance));
+                    platforms[platform.Type].Add(new WallPlatform(platformInstance, index));
                     break;
                 }
                 case PlatformType.LeftRotator:
                 {
-                    platforms[platform.Type].Add(new RotatorPlatform(platformInstance, true, player));
+                    platforms[platform.Type].Add(new RotatorPlatform(platformInstance, index, true, player));
                     rotation.y -= 90f;
-
                     break;
                 }
                 case PlatformType.RightRotator:
                 {
-                    platforms[platform.Type].Add(new RotatorPlatform(platformInstance, false, player));
+                    platforms[platform.Type].Add(new RotatorPlatform(platformInstance, index, false, player));
                     rotation.y += 90f;
-
+                    break;
+                }
+                case PlatformType.Finish:
+                {
+                    platforms[platform.Type].Add(new Platform.Platform(platformInstance, index));
                     break;
                 }
             }
 
-            platformPosition.z += 2f;
+            platformInstance.transform.rotation = Quaternion.Euler(rotation);
+
+            // platformPosition.z += platformPositionStep;
+            platformPosition += platformInstance.transform.forward.normalized * platformPositionStep;
+
+            platformInstance.transform.position = platformPosition;
 
             OnPlatformGenerated?.Invoke(index / (float) platformsCount);
         }
-
-        public void Update()
-        {
-            foreach (var platformKVP in platforms)
-            {
-                foreach (var platform in platformKVP.Value)
-                {
-                    platform.DoWork();
-
-                    if (platformKVP.Key == PlatformType.Missed ||
-                        platformKVP.Key == PlatformType.DoubleMissed ||
-                        platformKVP.Key == PlatformType.Saw ||
-                        platformKVP.Key == PlatformType.Wall)
-                    {
-                        if (Vector3.Distance(platform.Transform.position, player.transform.position) <= 2f)
-                        {
-                            OnPlatformPassed?.Invoke(platformKVP.Key);
-                        }
-                    }
-                }
-            }
-        }
     }
+
+    public class BuffsGenerator
+    {
+        private BuffConfigs buffConfigs;
+    }
+    
 }

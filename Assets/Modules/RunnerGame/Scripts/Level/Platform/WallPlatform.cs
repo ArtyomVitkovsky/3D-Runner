@@ -6,7 +6,7 @@ namespace Modules.RunnerGame.Scripts.Level.Platform
     [Serializable]
     public class WallPlatform : Platform
     {
-        public WallPlatform(GameObject platform) : base(platform)
+        public WallPlatform(GameObject platform, int index) : base(platform, index)
         {
         }
     }

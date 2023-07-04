@@ -86,6 +86,11 @@ namespace Modules.RunnerGame.Scripts.Player
             rigidbody.velocity = targetVelocity;
         }
 
+        public void Stop()
+        {
+            rigidbody.velocity = Vector3.zero;
+        }
+
         public void IsGrounded()
         {
             var startPos = transform.position;

@@ -6,5 +6,6 @@ public enum PlatformType
     Saw,
     Wall,
     LeftRotator,
-    RightRotator
+    RightRotator,
+    Finish
 }

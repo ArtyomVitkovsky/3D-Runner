@@ -16,7 +16,7 @@ namespace Modules.RunnerGame.Scripts.Level.Platform
         private float factor;
         private int posIndex;
 
-        public SawPlatform(GameObject platform) : base(platform)
+        public SawPlatform(GameObject platform, int index) : base(platform, index)
         {
             this.platform = platform;
             saw = platform.transform.GetChild(1).gameObject;

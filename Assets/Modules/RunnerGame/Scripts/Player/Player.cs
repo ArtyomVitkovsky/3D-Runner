@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Modules.MainModule.Scripts.InputServices;
@@ -27,8 +26,12 @@ namespace Modules.RunnerGame.Scripts.Player
 
         private CancellationTokenSource _cancellationTokenSource;
 
-        public int Health => playerStats.Health;
-        public float Speed => _playerMovement.Speed;
+        public HealthBuff healthBuff;
+        public SpeedBuff speedBuff;
+        public InvincibleBuff invincibleBuff;
+
+        public int Health => playerStats.Health + healthBuff.Value;
+        public float Speed => _playerMovement.Speed + speedBuff.Value;
         
         public UnityAction OnDeath;
         public UnityAction<int> OnHealthChange;
@@ -59,19 +62,40 @@ namespace Modules.RunnerGame.Scripts.Player
 
         public void FixedUpdate()
         {
-            if(GameSettings.IS_PAUSED) return;
+            if (GameSettings.IS_PAUSED)
+            {
+                _playerMovement?.Stop();
+                return;
+            }
             
             _playerMovement?.IsGrounded();
             _playerMovement?.Move();
         }
 
+        private void Update()
+        {
+            healthBuff.CheckDuration();
+            speedBuff.CheckDuration();
+            invincibleBuff.CheckDuration();
+        }
+
         public void ReceiveDamage(int damage)
         {
-            playerStats.Health -= damage;
-            OnHealthChange?.Invoke(playerStats.Health);
+            if(invincibleBuff.IsActive) return;
+
+            if (healthBuff.Value > 0)
+            {
+                healthBuff.Value -= damage;
+            }
+            else
+            {
+                playerStats.Health -= damage;
+            }
+            OnHealthChange?.Invoke(Health);
 
             _playerMovement.Speed = 0;
-            OnSpeedChange?.Invoke(_playerMovement.Speed);
+            speedBuff.Value = 0;
+            OnSpeedChange?.Invoke(Speed);
 
             _cancellationTokenSource = new CancellationTokenSource();
             if(!isSpeedResetInProgress) ResetSpeed();
@@ -108,6 +132,12 @@ namespace Modules.RunnerGame.Scripts.Player
             }
             
             isSpeedResetInProgress = false;
+        }
+
+        private void OnDestroy()
+        {
+            _playerMovement.OnJump -= _playerView.OnJump;
+            _playerMovement.OnGrounded -= _playerView.OnRun;
         }
     }
 }

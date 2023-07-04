@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Modules.MainModule.Scripts.UI;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,6 +12,7 @@ namespace Modules.RunnerGame.Scripts.UI
         [SerializeField] private Canvas canvas;
         [SerializeField] private TapToStartScreen tapToStartScreen;
         [SerializeField] private PlayerStatsScreen playerStatsScreen;
+        [SerializeField] private WinScreen.WinScreen winScreen;
 
         public UnityAction OnTapToStart;
     
@@ -21,11 +24,13 @@ namespace Modules.RunnerGame.Scripts.UI
         private void Construct(UIManager uiManager)
         {
             this.uiManager = uiManager;
-            uiManager.AddScreen(tapToStartScreen);
-            uiManager.AddScreen(playerStatsScreen);
+            this.uiManager.AddScreen(tapToStartScreen);
+            this.uiManager.AddScreen(playerStatsScreen);
+            this.uiManager.AddScreen(winScreen);
             
             tapToStartScreen.Initialize();
             playerStatsScreen.Initialize();
+            winScreen.Initialize();
         
             tapToStartScreen.OnTapToStart += OnTapToStartHandler;
 
@@ -41,6 +46,19 @@ namespace Modules.RunnerGame.Scripts.UI
         public void ShowTapToStartScreen()
         {
             uiManager.SetScreenActive<TapToStartScreen>(true, false);
+        }
+        
+        public void ShowWinScreen(Dictionary<PlatformType, int> passedPlatforms)
+        {
+            winScreen.SetPassedPlatforms(passedPlatforms);
+            uiManager.SetScreenActive<WinScreen.WinScreen>(true, false);
+        }
+
+        private void OnDestroy()
+        {
+            uiManager.RemoveScreen(tapToStartScreen);
+            uiManager.RemoveScreen(playerStatsScreen);
+            uiManager.RemoveScreen(winScreen);
         }
     }
 }
