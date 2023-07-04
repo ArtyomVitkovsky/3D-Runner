@@ -14,6 +14,8 @@ namespace Modules.MainModule.Scripts
         
         [SerializeField] private ModuleSo[] modules;
 
+        private ModuleSo currentModule;
+
         private SceneLoader sceneLoader;
         
         public ModuleSo[] Modules => modules;
@@ -31,6 +33,7 @@ namespace Modules.MainModule.Scripts
 
         public void LoadStartModule()
         {
+            currentModule = startModule;
             sceneLoader.LoadScene(startModule.SceneName, LoadSceneMode.Single);
         }
         
@@ -39,7 +42,22 @@ namespace Modules.MainModule.Scripts
             var moduleSo = modules.FirstOrDefault(m => m.Module == module);
             if(moduleSo == null) return;
             
+            currentModule = moduleSo;
+            
             sceneLoader.LoadScene(moduleSo.SceneName, LoadSceneMode.Additive);
+        }
+        
+        public void ReloadModule(Module module)
+        {
+            var moduleSo = modules.FirstOrDefault(m => m.Module == module);
+            if(moduleSo == null) return;
+            
+            sceneLoader.ReloadScene(moduleSo.SceneName);
+        }
+        
+        public void ReloadCurrentModule()
+        {
+            sceneLoader.ReloadScene(currentModule.SceneName);
         }
     }
 }
