@@ -2,6 +2,8 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Modules.MainModule.Scripts.InputServices;
 using Modules.RunnerGame.Scripts.Animation;
+using Modules.RunnerGame.Scripts.Level.Buff;
+using Modules.RunnerGame.Scripts.Level.Platform;
 using UnityEngine;
 using UnityEngine.Events;
 using Zenject;
@@ -12,28 +14,46 @@ namespace Modules.RunnerGame.Scripts.Player
     {
         [SerializeField] private new Rigidbody rigidbody;
         [SerializeField] private AnimationController animationController;
+        [SerializeField] private LayerMask groundMask;
 
         [SerializeField] private PlayerConfig playerConfig;
 
-        private PlayerStats playerStats;
-        
-        private PlayerMovement _playerMovement;
+        private PlayerStats _playerStats;
+
+        [SerializeField] private PlayerMovement _playerMovement;
         private PlayerView _playerView;
 
-        private float resetSpeedCurrentDuration;
+        private float _resetSpeedCurrentDuration;
 
-        private bool isSpeedResetInProgress;
+        private bool _isSpeedResetInProgress;
 
         private CancellationTokenSource _cancellationTokenSource;
 
-        public HealthBuff healthBuff;
-        public SpeedBuff speedBuff;
-        public InvincibleBuff invincibleBuff;
+        private HealthBuff _healthBuff;
+        private SpeedBuff _speedBuff;
+        private InvincibleBuff _invincibleBuff;
 
-        public int Health => playerStats.Health + healthBuff.Value;
-        public float Speed => _playerMovement.Speed + speedBuff.Value;
-        
-        public UnityAction OnDeath;
+        public int Health
+        {
+            get
+            {
+                var value = _playerStats.Health;
+                if (_healthBuff != null) value += _healthBuff.Value;
+                return value;
+            }
+        }
+
+        public float Speed
+        {
+            get
+            {
+                var value = _playerMovement.Speed;
+                if (_speedBuff != null) value += _speedBuff.Value;
+                return value;
+            }
+        }
+
+        public UnityAction<Platform> OnDeath;
         public UnityAction<int> OnHealthChange;
         public UnityAction<float> OnSpeedChange;
 
@@ -41,23 +61,37 @@ namespace Modules.RunnerGame.Scripts.Player
         private void Construct(InputService inputService)
         {
             _playerMovement = new PlayerMovement(
-                inputService, 
-                rigidbody, 
+                inputService,
+                rigidbody,
                 transform,
                 playerConfig.Speed,
-                playerConfig.JumpForce);
-            
+                playerConfig.JumpForce,
+                groundMask);
+
             _playerView = new PlayerView(animationController);
 
             _playerMovement.OnJump += _playerView.OnJump;
             _playerMovement.OnGrounded += _playerView.OnRun;
+            OnSpeedChange += _playerMovement.SetSpeed;
 
-            playerStats = new PlayerStats
+            _playerStats = new PlayerStats
             {
                 Health = playerConfig.StartHealthPoints
             };
-            
-            OnHealthChange?.Invoke(playerStats.Health);
+
+            OnHealthChange?.Invoke(Health);
+        }
+
+        private void OnBuffEnded(Buff buff)
+        {
+            if (buff is HealthBuff healthBuff)
+            {
+                healthBuff.Value = 0;
+            }
+            else if (buff is SpeedBuff speedBuff)
+            {
+                speedBuff.Value = 0;
+            }
         }
 
         public void FixedUpdate()
@@ -67,77 +101,107 @@ namespace Modules.RunnerGame.Scripts.Player
                 _playerMovement?.Stop();
                 return;
             }
-            
+
             _playerMovement?.IsGrounded();
             _playerMovement?.Move();
         }
 
         private void Update()
         {
-            healthBuff.CheckDuration();
-            speedBuff.CheckDuration();
-            invincibleBuff.CheckDuration();
+            _healthBuff?.CheckDuration();
+            _speedBuff?.CheckDuration();
+            _invincibleBuff?.CheckDuration();
         }
 
-        public void ReceiveDamage(int damage)
+        public void ReceiveDamage(int damage, Platform platform)
         {
-            if(invincibleBuff.IsActive) return;
+            if (_invincibleBuff is {IsActive: true}) return;
 
-            if (healthBuff.Value > 0)
+            if (_healthBuff is {Value: > 0})
             {
-                healthBuff.Value -= damage;
+                _healthBuff.Value -= damage;
             }
             else
             {
-                playerStats.Health -= damage;
+                _playerStats.Health -= damage;
             }
+
             OnHealthChange?.Invoke(Health);
 
-            _playerMovement.Speed = 0;
-            speedBuff.Value = 0;
+            _playerMovement.SetSpeed(0);
+            if (_speedBuff != null) _speedBuff.Value = 0;
+            
             OnSpeedChange?.Invoke(Speed);
 
             _cancellationTokenSource = new CancellationTokenSource();
-            if(!isSpeedResetInProgress) ResetSpeed();
-            resetSpeedCurrentDuration = 0;
-            
-            if (playerStats.Health <= 0)
+            if (!_isSpeedResetInProgress) ResetSpeed();
+            _resetSpeedCurrentDuration = 0;
+
+            if (_playerStats.Health <= 0)
             {
-                OnDeath?.Invoke();
+                OnDeath?.Invoke(platform);
                 _cancellationTokenSource.Cancel();
             }
         }
 
         async UniTask ResetSpeed()
         {
-            isSpeedResetInProgress = true;
-            resetSpeedCurrentDuration = 0;
+            _isSpeedResetInProgress = true;
+            _resetSpeedCurrentDuration = 0;
 
-            var factor = resetSpeedCurrentDuration / playerConfig.ResetSpeedDuration;
+            var factor = _resetSpeedCurrentDuration / playerConfig.ResetSpeedDuration;
 
             while (factor <= 1)
             {
-                _playerMovement.Speed = Mathf.Lerp(0, playerConfig.Speed, factor);
+                _playerMovement.SetSpeed(Mathf.Lerp(0, playerConfig.Speed, factor));
                 OnSpeedChange?.Invoke(_playerMovement.Speed);
 
-                resetSpeedCurrentDuration += Time.deltaTime;
-                factor = resetSpeedCurrentDuration / playerConfig.ResetSpeedDuration;
-                
+                _resetSpeedCurrentDuration += Time.deltaTime;
+                factor = _resetSpeedCurrentDuration / playerConfig.ResetSpeedDuration;
+
                 await UniTask.WaitForEndOfFrame(this, cancellationToken: _cancellationTokenSource.Token);
 
-                if (playerStats.Health <= 0)
+                if (_playerStats.Health <= 0)
                 {
                     break;
                 }
             }
-            
-            isSpeedResetInProgress = false;
+
+            _isSpeedResetInProgress = false;
         }
 
         private void OnDestroy()
         {
             _playerMovement.OnJump -= _playerView.OnJump;
             _playerMovement.OnGrounded -= _playerView.OnRun;
+
+            _playerMovement.OnDestroy();
+        }
+
+        public void SetHealthBuff(HealthBuff healthBuff)
+        {
+            _healthBuff = new HealthBuff(healthBuff.Duration, healthBuff.Value);
+            OnHealthChange?.Invoke(Health);
+            _healthBuff.OnBuffEnded += OnBuffEnded;
+        }
+
+        public void SetSpeedBuff(SpeedBuff speedBuff)
+        {
+            _speedBuff = new SpeedBuff(speedBuff.Duration, speedBuff.Value);
+            _playerMovement.SetSpeed(Speed);
+            OnSpeedChange?.Invoke(Speed);
+            _speedBuff.OnBuffEnded += OnBuffEnded;
+        }
+
+        public void SetInvincibleBuff(InvincibleBuff invincibleBuff)
+        {
+            _invincibleBuff = new InvincibleBuff(invincibleBuff.Duration);
+        }
+
+        public void Reset()
+        {
+            _playerMovement.SetSpeed(playerConfig.Speed);
+            _playerStats.Health = playerConfig.StartHealthPoints;
         }
     }
 }

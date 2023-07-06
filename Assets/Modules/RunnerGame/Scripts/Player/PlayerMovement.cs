@@ -20,18 +20,18 @@ namespace Modules.RunnerGame.Scripts.Player
 
         private bool isGrounded;
         private bool isJumped;
-        private int jumpsCount;
+        [SerializeField] private int jumpsCount;
 
         public UnityAction OnGrounded;
         public UnityAction OnJump;
-        
-        public float Speed
-        {
-            get => speed;
-            set => speed = value;
-        }
 
-        public PlayerMovement(InputService inputService, Rigidbody rigidbody, Transform transform, float speed, float jumpForce)
+        private LayerMask groundMask;
+        [SerializeField] private float rayLength = 0.1f;
+
+        public float Speed => speed;
+
+        public PlayerMovement(InputService inputService, Rigidbody rigidbody, Transform transform, 
+            float speed, float jumpForce, LayerMask groundMask)
         {
             this.inputService = inputService;
             this.rigidbody = rigidbody;
@@ -40,6 +40,8 @@ namespace Modules.RunnerGame.Scripts.Player
             this.speed = speed;
             this.jumpForce = jumpForce;
 
+            this.groundMask = groundMask;
+            
             this.inputService.OnTap += Jump;
         
             SetMoveDirectionZ(1f);
@@ -47,7 +49,9 @@ namespace Modules.RunnerGame.Scripts.Player
 
         private void Jump()
         {
-            if (isGrounded || jumpsCount < 1)
+            if (GameSettings.IS_PAUSED) return;
+            
+            if (isGrounded || jumpsCount < 2)
             {
                 jumpsCount++;
 
@@ -94,10 +98,11 @@ namespace Modules.RunnerGame.Scripts.Player
         public void IsGrounded()
         {
             var startPos = transform.position;
-            var direction = startPos - transform.up * 0.05f;
+            var direction = startPos - transform.up;
 
-            Physics.Raycast(startPos, direction, out var hitInfo);
-            Debug.DrawLine(startPos, direction, Color.magenta);
+            Physics.Raycast(startPos, direction, out var hitInfo, rayLength, groundMask);
+
+            Debug.DrawLine(startPos, direction);
             
             isGrounded = hitInfo.transform != null;
         }
@@ -105,6 +110,16 @@ namespace Modules.RunnerGame.Scripts.Player
         private void Gravity()
         {
             rigidbody.AddForce(new Vector3(0, -9.81f, 0));
+        }
+
+        public void OnDestroy()
+        {
+            inputService.OnTap -= Jump;
+        }
+
+        public void SetSpeed(float speed)
+        {
+            this.speed = speed;
         }
     }
 }

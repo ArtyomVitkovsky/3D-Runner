@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc5d5e356469434294da130cad87a784, type: 3}
+  m_Name: BuffConfigs
+  m_EditorClassIdentifier: 
+  healthBuff:
+    prefab: {fileID: 4878629029003851250, guid: 48705dd3e298b1542a0eb3e47c1609e7, type: 3}
+    chance: 0
+    healthBuff:
+      duration: -1
+      currentDuration: 0
+      value: 5
+  speedBuff:
+    prefab: {fileID: 7354412355406568350, guid: 4ad52c7d1ce7a3249b4c50dab9fa5e7f, type: 3}
+    chance: 5
+    speedBuff:
+      duration: 3
+      currentDuration: 0
+      value: 1
+  invincibleBuff:
+    prefab: {fileID: 2326291620050814401, guid: 695fb3803712eba44ac140f7ea52117b, type: 3}
+    chance: 0
+    invincibleBuff:
+      duration: 3
+      currentDuration: 0
