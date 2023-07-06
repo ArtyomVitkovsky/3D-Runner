@@ -74,8 +74,8 @@ namespace Modules.MainModule.Scripts
         private IEnumerator ReloadSceneCoroutine(string sceneName)
         {
             var lastActiveScene = SceneManager.GetActiveScene();
-            yield return StartCoroutine(LoadSceneCoroutine(sceneName, LoadSceneMode.Additive, true));
             yield return SceneManager.UnloadSceneAsync(lastActiveScene);
+            yield return StartCoroutine(LoadSceneCoroutine(sceneName, LoadSceneMode.Additive, true));
         }
     }
 }

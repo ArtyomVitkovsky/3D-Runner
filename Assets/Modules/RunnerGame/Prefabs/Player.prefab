@@ -2162,6 +2162,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rigidbody: {fileID: 5092579628719138295}
   animationController: {fileID: 3600498295001434452}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 512
   playerConfig: {fileID: 11400000, guid: 7ae87855cfaad094ba601922e950cfcf, type: 2}
 --- !u!54 &5092579628719138295
 Rigidbody:

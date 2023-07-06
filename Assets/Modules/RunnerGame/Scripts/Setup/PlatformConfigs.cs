@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Modules.RunnerGame.Scripts.Level
+namespace Modules.RunnerGame.Scripts.Setup
 {
     [CreateAssetMenu(menuName = "Scriptable Objects/Platforms", fileName = "PlatformConfigs")]
     public class PlatformConfigs : ScriptableObject

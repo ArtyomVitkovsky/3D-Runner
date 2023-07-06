@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Modules.RunnerGame.Scripts
+namespace Modules.RunnerGame.Scripts.Setup
 {
     [Serializable]
     public struct PlatformConfig

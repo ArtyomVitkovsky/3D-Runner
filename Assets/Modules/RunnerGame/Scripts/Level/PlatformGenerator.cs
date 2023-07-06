@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Triggers;
 using Modules.RunnerGame.Scripts.Level.Platform;
+using Modules.RunnerGame.Scripts.Setup;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -20,6 +21,7 @@ namespace Modules.RunnerGame.Scripts.Level
 
         private Vector3 platformPosition = new(0, 0, -4f);
         private float platformPositionStep;
+        private float previousPlatformPositionStep;
         private Vector3 rotation;
 
         public UnityAction<float> OnPlatformGenerated;
@@ -28,6 +30,10 @@ namespace Modules.RunnerGame.Scripts.Level
         private Transform holder;
 
         private int platformIndex;
+        
+        public Dictionary<PlatformType, List<Platform.Platform>> Platforms => platforms;
+
+        public int PlatformsCount => platformIndex + 1;
 
         public PlatformGenerator(
             PlatformConfigs platformConfigs,
@@ -44,10 +50,6 @@ namespace Modules.RunnerGame.Scripts.Level
 
             this.holder = holder;
         }
-
-        public Dictionary<PlatformType, List<Platform.Platform>> Platforms => platforms;
-
-        public int PlatformsCount => platformIndex + 1;
 
         public void Generate()
         {
@@ -106,7 +108,7 @@ namespace Modules.RunnerGame.Scripts.Level
                 platform.Prefab,
                 holder);
 
-            platformPositionStep = 2;
+            platformPositionStep = 1f;
 
             switch (platform.Type)
             {
@@ -123,7 +125,7 @@ namespace Modules.RunnerGame.Scripts.Level
                 case PlatformType.DoubleMissed:
                 {
                     platforms[platform.Type].Add(new DoubleMissedPlatform(platformInstance, index));
-                    platformPositionStep = 3;
+                    platformPositionStep = 2f;
                     break;
                 }
                 case PlatformType.Saw:
@@ -158,17 +160,14 @@ namespace Modules.RunnerGame.Scripts.Level
             platformInstance.transform.rotation = Quaternion.Euler(rotation);
 
             // platformPosition.z += platformPositionStep;
-            platformPosition += platformInstance.transform.forward.normalized * platformPositionStep;
+            platformPosition += platformInstance.transform.forward.normalized * 
+                                (platformPositionStep + previousPlatformPositionStep);
+            
+            previousPlatformPositionStep = platformPositionStep;
 
             platformInstance.transform.position = platformPosition;
 
             OnPlatformGenerated?.Invoke(index / (float) platformsCount);
         }
     }
-
-    public class BuffsGenerator
-    {
-        private BuffConfigs buffConfigs;
-    }
-    
 }

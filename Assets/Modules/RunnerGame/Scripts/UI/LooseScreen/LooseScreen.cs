@@ -3,17 +3,21 @@ using Modules.MainModule.Scripts;
 using Modules.MainModule.Scripts.UI.Interfaces;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using Zenject;
 
-namespace Modules.RunnerGame.Scripts.UI.WinScreen
+namespace Modules.RunnerGame.Scripts.UI.LooseScreen
 {
-    public class WinScreen : MonoBehaviour, IScreen
+    public class LooseScreen : MonoBehaviour, IScreen
     {
         [SerializeField] private ButtonInteraction continueButton;
+        [SerializeField] private ButtonInteraction restartButton;
         [SerializeField] private List<TextMeshProUGUI> passedPlatformsInfo;
 
         private ModulesSystem modulesSystem;
         
+        public UnityAction OnContinue;
+
         [Inject]
         private void Construct(ModulesSystem modulesSystem)
         {
@@ -23,6 +27,7 @@ namespace Modules.RunnerGame.Scripts.UI.WinScreen
         private void Awake()
         {
             continueButton.AddListener(ContinueButtonHandler);
+            restartButton.AddListener(RestartButtonHandler);
         }
 
         public void SetPassedPlatforms(Dictionary<PlatformType, int> passedPlatforms)
@@ -40,8 +45,13 @@ namespace Modules.RunnerGame.Scripts.UI.WinScreen
                 passedPlatformsInfo[platformIndex].gameObject.SetActive(false);
             }
         }
-
-        private void ContinueButtonHandler()
+        
+        public void ContinueButtonHandler()
+        {
+            OnContinue?.Invoke();
+        }
+        
+        public void RestartButtonHandler()
         {
             modulesSystem.ReloadCurrentModule();
         }
@@ -49,6 +59,7 @@ namespace Modules.RunnerGame.Scripts.UI.WinScreen
         public void Initialize()
         {
             continueButton.Initialize();
+            restartButton.Initialize();
         }
 
         public void SetActive(bool isActive)

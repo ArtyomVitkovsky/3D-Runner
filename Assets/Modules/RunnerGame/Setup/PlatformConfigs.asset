@@ -15,11 +15,11 @@ MonoBehaviour:
   platformConfigs:
   - prefab: {fileID: 5917971072966907473, guid: 8dddeabd6f8ceb14dae457ec81ecbd7b, type: 3}
     type: 0
-    spawnChance: 65
+    spawnChance: 50
   - prefab: {fileID: 470989408366561714, guid: 6acf7657aaaca0242b4e4ff1b756227e, type: 3}
     type: 1
     spawnChance: 5
-  - prefab: {fileID: 470989408366561714, guid: 6acf7657aaaca0242b4e4ff1b756227e, type: 3}
+  - prefab: {fileID: 4564561599609039901, guid: d46393a8c9aa35a4ab15fdef8057f133, type: 3}
     type: 2
     spawnChance: 5
   - prefab: {fileID: 3316609217189877629, guid: 673dc080cf8f6c54ab447209264989ac, type: 3}
@@ -27,10 +27,13 @@ MonoBehaviour:
     spawnChance: 10
   - prefab: {fileID: 5767646525986540076, guid: 0ac97b4571f3a1b4cb5f5eed2111a1b7, type: 3}
     type: 4
-    spawnChance: 15
+    spawnChance: 10
   - prefab: {fileID: 3442225276560799374, guid: 17de6fcc325e88a4e90d475872b5cd4c, type: 3}
     type: 5
     spawnChance: 0
   - prefab: {fileID: 874384944544144086, guid: 27df8775b62835841bf14495c9a8a4d3, type: 3}
     type: 6
+    spawnChance: 0
+  - prefab: {fileID: 5411408152594881213, guid: 8d3721e96126d1c409bfe5834885ee55, type: 3}
+    type: 7
     spawnChance: 0

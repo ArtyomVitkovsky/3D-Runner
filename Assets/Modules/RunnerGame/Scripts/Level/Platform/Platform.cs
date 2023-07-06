@@ -18,6 +18,12 @@ namespace Modules.RunnerGame.Scripts.Level.Platform
         {
             this.platform = platform;
             this.index = index;
+
+            var damager = platform.GetComponentInChildren<Damager>();
+            if (damager != null)
+            {
+                damager.SetPlatform(this);
+            }
         }
 
         public virtual void DoWork(){}

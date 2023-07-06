@@ -7,6 +7,13 @@ namespace Modules.RunnerGame.Scripts.Level.Platform
         [SerializeField] private Collider[] colliders;
         [SerializeField] private int damage;
 
+        [SerializeField] private Platform platform;
+        
+        public void SetPlatform(Platform platform)
+        {
+            this.platform = platform;
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             if (other.TryGetComponent(out Player.Player player))
@@ -15,9 +22,7 @@ namespace Modules.RunnerGame.Scripts.Level.Platform
                 {
                     collider.enabled = false;
                 }
-                player.ReceiveDamage(damage);
-                
-                Debug.LogWarning($"DAMAGE BY {name} FOR {damage} POINTS");
+                player.ReceiveDamage(damage, platform);
             }
         }
     }
