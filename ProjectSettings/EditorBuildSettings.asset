@@ -14,4 +14,5 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Modules/RunnerGame/Scenes/RunnerGameScene.unity
     guid: 5eeea4f1d0cb7014f86b44456eeba517
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 45b5a4b59a3e3de4cb800fc6eb03d411, type: 2}

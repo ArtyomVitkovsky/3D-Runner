@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Modules.MainModule.Scripts.UI;
 using Modules.MainModule.Scripts.UI.Screens;
+using Modules.RunnerGame.Scripts;
 using Modules.RunnerGame.Scripts.Level;
 using Modules.RunnerGame.Scripts.Level.Buff;
 using Modules.RunnerGame.Scripts.Level.Platform;
@@ -9,12 +11,35 @@ using Modules.RunnerGame.Scripts.Player;
 using Modules.RunnerGame.Scripts.Setup;
 using Modules.RunnerGame.Scripts.UI;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.Events;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using Zenject;
+
+[Serializable]
+public class AssetReferencePlatformConfigs : AssetReferenceT<PlatformConfigs>
+{
+    public AssetReferencePlatformConfigs(string guid) : base(guid)
+    {
+    }
+}
+
+[Serializable]
+public class AssetReferenceBuffConfigs : AssetReferenceT<BuffConfigs>
+{
+    public AssetReferenceBuffConfigs(string guid) : base(guid)
+    {
+    }
+}
+
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private PlatformConfigs platformConfigs;
-    [SerializeField] private BuffConfigs buffConfigs;
+    [SerializeField] private AssetReferencePlatformConfigs platformConfigsAsset;
+    [SerializeField] private AssetReferenceBuffConfigs buffConfigsAsset;
+
+    private PlatformConfigs _platformConfigs;
+    private BuffConfigs _buffConfigs;
 
     private PlatformGenerator platformGenerator;
     private PlatformsSystem platformsSystem;
@@ -29,8 +54,16 @@ public class GameManager : MonoBehaviour
     private Player player;
     private Platform restartPlatform;
 
+    private AddressablesSystem addressablesSystem;
+
+    private bool isLevelGenerated;
+
+    public UnityAction OnPlatformConfigsLoaded;
+    public UnityAction OnBuffConfigsLoaded;
+
     [Inject]
-    private void Construct(UIManager uiManager, RunnerUIManager runnerUIManager, Player player)
+    private void Construct(AddressablesSystem addressablesSystem, UIManager uiManager, RunnerUIManager runnerUIManager,
+        Player player)
     {
         GameSettings.IS_PAUSED = true;
 
@@ -38,9 +71,24 @@ public class GameManager : MonoBehaviour
 
         SetupUI(uiManager, runnerUIManager);
 
-        SetupPlatformGenerator();
-        SetupBuffGenerator(platformGenerator.Platforms[PlatformType.Default]);
+        this.addressablesSystem = addressablesSystem;
+
+        SetupGenerators();
     }
+
+    private async UniTask SetupGenerators()
+    {
+        OnPlatformConfigsLoaded += SetupBuffGenerator;
+        OnBuffConfigsLoaded += () =>
+        {
+            isLevelGenerated = true;
+
+            OnGenerationFinished();
+        };
+        
+        SetupPlatformGenerator();
+    }
+
 
     private void SetupPlayer(Player player)
     {
@@ -52,9 +100,9 @@ public class GameManager : MonoBehaviour
     {
         restartPlatform = loosePlatform;
         bool isRestartPlatformSetted = false;
-        
+
         var targetIndex = loosePlatform.Index;
-        
+
         while (!isRestartPlatformSetted)
         {
             foreach (var platform in platformGenerator.Platforms[PlatformType.Default])
@@ -69,7 +117,7 @@ public class GameManager : MonoBehaviour
 
             targetIndex++;
         }
-       
+
 
         GameSettings.IS_PAUSED = true;
         runnerUIManager.ShowLooseScreen(passedPlatforms);
@@ -86,11 +134,18 @@ public class GameManager : MonoBehaviour
 
     private void SetupPlatformGenerator()
     {
+        addressablesSystem.LoadAsset(platformConfigsAsset, OnPlatformConfigsLoadedHandler);
+    }
+
+    private void OnPlatformConfigsLoadedHandler(AsyncOperationHandle<PlatformConfigs> asyncOperationHandle)
+    {
+        _platformConfigs = asyncOperationHandle.Result;
+        
         passedPlatforms = new Dictionary<PlatformType, int>();
-        platformGenerator = new PlatformGenerator(platformConfigs, 50, player, transform);
+        platformGenerator = new PlatformGenerator(_platformConfigs, 50, player, transform);
 
         platformGenerator.OnPlatformGenerated += OnPlatformGenerated;
-        platformGenerator.OnGenerationFinished += OnGenerationFinished;
+
         platformGenerator.Generate();
 
         platformsSystem =
@@ -100,14 +155,25 @@ public class GameManager : MonoBehaviour
                 platformGenerator.PlatformsCount);
 
         platformsSystem.OnPlatformPassed += OnPlatformPassed;
+
+        OnPlatformConfigsLoaded?.Invoke();
     }
 
-    private void SetupBuffGenerator(List<Platform> generatedDefaultPlatforms)
+    private void SetupBuffGenerator()
     {
+        addressablesSystem.LoadAsset(buffConfigsAsset, OnBuffConfigsLoadedHandler);
+    }
+
+    private void OnBuffConfigsLoadedHandler(AsyncOperationHandle<BuffConfigs> asyncOperationHandle)
+    {
+        _buffConfigs = asyncOperationHandle.Result;
+
         buffObjects = new List<BuffObject>();
-        buffsGenerator = new BuffsGenerator(buffConfigs, platformGenerator.Platforms[PlatformType.Default]);
+        buffsGenerator = new BuffsGenerator(_buffConfigs, platformGenerator.Platforms[PlatformType.Default]);
 
         buffsGenerator.Generate();
+        
+        OnBuffConfigsLoaded?.Invoke();
     }
 
     private void OnPlatformPassed(PlatformType type)
@@ -151,7 +217,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        platformsSystem.Run();
+        if (isLevelGenerated) platformsSystem.Run();
     }
 
     private void OnPlatformGenerated(float progress)

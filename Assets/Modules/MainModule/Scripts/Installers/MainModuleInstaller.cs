@@ -1,6 +1,7 @@
 using Modules.MainModule.Scripts.InputServices;
 using Modules.MainModule.Scripts.Sound;
 using Modules.MainModule.Scripts.UI;
+using Modules.RunnerGame.Scripts;
 using UnityEngine;
 using Zenject;
 
@@ -17,7 +18,7 @@ namespace Modules.MainModule.Scripts.Installers
         
         [Header("SCENE MANAGEMENT")]
         [SerializeField] private SceneLoader sceneLoader;
-        
+
         [Header("MODULES SYSTEM")]
         [SerializeField] private ModulesSystem modulesSystemPrefab;
 
@@ -26,10 +27,15 @@ namespace Modules.MainModule.Scripts.Installers
         
         [Header("USER INTERFACE")]
         [SerializeField] private UIManager uiManager;
+
+        private AddressablesSystem _addressablesSystem;
+
         
         public override void InstallBindings()
         {
             BindPlayerData();
+            
+            BindAddressablesSystem();
 
             BindInputService();
             
@@ -40,6 +46,13 @@ namespace Modules.MainModule.Scripts.Installers
             BindSceneLoader();
             
             BindModulesSystem();
+        }
+
+        private void BindAddressablesSystem()
+        {
+            _addressablesSystem = new AddressablesSystem();
+            
+            Container.Bind<AddressablesSystem>().FromInstance(_addressablesSystem).AsSingle();
         }
 
         private void BindSoundControl()

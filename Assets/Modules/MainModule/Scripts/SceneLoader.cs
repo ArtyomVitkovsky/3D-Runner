@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using Modules.MainModule.Scripts.UI;
 using Modules.MainModule.Scripts.UI.Screens;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Events;
+using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 using Zenject;
 
@@ -12,7 +15,9 @@ namespace Modules.MainModule.Scripts
 {
     public class SceneLoader : MonoBehaviour
     {
-        private List<Scene> loadedScenes;
+        private List<SceneInstance> loadedScenes;
+
+        private SceneInstance loadedSceneInstance;
         
         private UIManager uiManager;
         [Inject]
@@ -26,56 +31,60 @@ namespace Modules.MainModule.Scripts
 
         private void Awake()
         {
-            loadedScenes ??= new List<Scene>();
+            loadedScenes ??= new List<SceneInstance>();
         }
 
         public void LoadScene(string sceneName, LoadSceneMode loadSceneMode)
         {
-            if(loadSceneMode == LoadSceneMode.Single) loadedScenes.Clear();
+            if (loadSceneMode == LoadSceneMode.Single) loadedScenes.Clear();
 
-            StartCoroutine(LoadSceneCoroutine(sceneName, loadSceneMode, false));
+            LoadSceneAsync(sceneName, loadSceneMode, false);
         }
 
-        private IEnumerator LoadSceneCoroutine(string sceneName, LoadSceneMode loadSceneMode, bool canBeLoadedTwice)
+        private async UniTask LoadSceneAsync(string sceneName, LoadSceneMode loadSceneMode, bool canBeLoadedTwice)
         {
-            if (SceneManager.GetSceneByName(sceneName).isLoaded && !canBeLoadedTwice) yield break;
+            if (SceneManager.GetSceneByName(sceneName).isLoaded && !canBeLoadedTwice) return;
 
             uiManager.SetScreenActive<LoadingScreen>(true, false);
-            
-            yield return SceneManager.LoadSceneAsync(sceneName, loadSceneMode);
+
+            var asyncHandle = Addressables.LoadSceneAsync(sceneName, loadSceneMode);
+            await UniTask.WaitWhile(() => !asyncHandle.IsDone);
+
+            loadedSceneInstance = asyncHandle.Result;
             
             var loadedScene = SceneManager.GetSceneByName(sceneName);
-            
-            loadedScenes ??= new List<Scene>();
-            loadedScenes.Add(loadedScene);
+
+            loadedScenes ??= new List<SceneInstance>();
+            loadedScenes.Add(loadedSceneInstance);
 
             SceneManager.SetActiveScene(loadedScene);
-            
+
             OnSceneLoaded?.Invoke(sceneName);
         }
 
-        public void UnloadScene(string sceneName)
+        public void UnloadSceneAsync(string sceneName)
         {
-            StartCoroutine(UnloadSceneCoroutine(sceneName));
+            UnloadSceneCoroutine(sceneName);
         }
 
-        private IEnumerator UnloadSceneCoroutine(string sceneName)
+        private async UniTask UnloadSceneCoroutine(string sceneName)
         {
-            yield return SceneManager.UnloadSceneAsync(sceneName);
+            var sceneInstance = loadedScenes.Find(s => s.Scene.name == sceneName);
             
+            await UniTask.WaitWhile(() => !Addressables.UnloadSceneAsync(sceneInstance).IsDone);
+
             OnSceneUnloaded?.Invoke(sceneName);
         }
 
         public void ReloadScene(string sceneName)
         {
-            StartCoroutine(ReloadSceneCoroutine(sceneName));
+            ReloadSceneCoroutine(sceneName);
         }
 
-        private IEnumerator ReloadSceneCoroutine(string sceneName)
+        private async UniTask ReloadSceneCoroutine(string sceneName)
         {
-            var lastActiveScene = SceneManager.GetActiveScene();
-            yield return SceneManager.UnloadSceneAsync(lastActiveScene);
-            yield return StartCoroutine(LoadSceneCoroutine(sceneName, LoadSceneMode.Additive, true));
+            await UniTask.WaitWhile(() => !Addressables.UnloadSceneAsync(loadedSceneInstance).IsDone);
+            LoadSceneAsync(sceneName, LoadSceneMode.Additive, true);
         }
     }
 }

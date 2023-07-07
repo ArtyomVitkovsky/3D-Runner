@@ -1,9 +1,13 @@
 using System;
 using System.Linq;
 using Modules.MainModule.Scripts.Enums;
+using Modules.RunnerGame.Scripts;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
 using Zenject;
+using Object = UnityEngine.Object;
 
 
 namespace Modules.MainModule.Scripts
@@ -17,7 +21,7 @@ namespace Modules.MainModule.Scripts
         private ModuleSo currentModule;
 
         private SceneLoader sceneLoader;
-        
+
         public ModuleSo[] Modules => modules;
 
         [Inject]
@@ -46,7 +50,7 @@ namespace Modules.MainModule.Scripts
             
             sceneLoader.LoadScene(moduleSo.SceneName, LoadSceneMode.Additive);
         }
-        
+
         public void ReloadModule(Module module)
         {
             var moduleSo = modules.FirstOrDefault(m => m.Module == module);

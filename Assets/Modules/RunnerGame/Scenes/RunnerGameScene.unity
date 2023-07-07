@@ -316,6 +316,8 @@ MonoBehaviour:
   colliders:
   - {fileID: 354788943}
   damage: 100
+  platform:
+    platform: {fileID: 0}
 --- !u!1 &1345357600
 GameObject:
   m_ObjectHideFlags: 0
@@ -360,8 +362,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7548f6fd8257dc4e91e98f39eadd1a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  platformConfigs: {fileID: 11400000, guid: 912f78193b24d2e4188f2e19bf2ef92d, type: 2}
-  buffConfigs: {fileID: 11400000, guid: afa9c4132911250438f83844f31e0b2a, type: 2}
+  platformConfigsAsset:
+    m_AssetGUID: 912f78193b24d2e4188f2e19bf2ef92d
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  buffConfigsAsset:
+    m_AssetGUID: afa9c4132911250438f83844f31e0b2a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
 --- !u!1 &1650958836
 GameObject:
   m_ObjectHideFlags: 0

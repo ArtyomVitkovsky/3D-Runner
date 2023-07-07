@@ -1,5 +1,7 @@
 using Modules.MainModule.Scripts.Enums;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.ResourceManagement.ResourceProviders;
 
 namespace Modules.MainModule.Scripts
 {
@@ -9,7 +11,7 @@ namespace Modules.MainModule.Scripts
         [SerializeField] private Module module;
         [SerializeField] private string moduleName;
         [SerializeField] private string sceneName;
-
+        
         public Module Module => module;
 
         public string SceneName => sceneName;
